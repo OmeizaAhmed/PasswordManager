@@ -1,9 +1,10 @@
 import { Pool } from 'pg';
+import { DATABASE_PASSWORD } from '../config.js';
 export const pool = new Pool({
     user: 'postgres',
-    password: 'omeiza81',
+    password: DATABASE_PASSWORD,
     host: 'localhost',
     port: 5432,
-    database: "PasswordManager"
+    database: "passwordmanager"
 });
 //# sourceMappingURL=db.js.map
