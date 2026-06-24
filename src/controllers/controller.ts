@@ -58,7 +58,9 @@ export const getPassword = async (req: Request, res: Response) => {
 };
 
 export const addPassword = async (req: Request, res: Response) => {
-  let {name, password} = req.body;
+  const body = req.body;
+  const name: string = body?.name;
+  let password: string = body?.password;
   if(!name){
     res.status(400).send("Password must have a name");
     return;
@@ -74,7 +76,7 @@ export const addPassword = async (req: Request, res: Response) => {
       res.status(500).send("An Error occurred");
       return;
     }
-    res.send(createdPassword.rows[0])
+    res.status(201).send(createdPassword.rows[0])
 
   } catch (error) {
     if(error instanceof Error){
@@ -86,13 +88,84 @@ export const addPassword = async (req: Request, res: Response) => {
   
   };
 
-export const deletePassword = (req: Request, res: Response) => {
+export const deletePassword = async (req: Request, res: Response) => {
   const {id} = req.params;
-  res.json({message: `Password with id: ${id} has been deleted`});
+  try {
+    // check if the password exist
+    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
+
+    if(passwordDetail.length == 0){
+      res.status(404).send("Not Found");
+      return;
+    }
+
+    const sqlQuery: string = "DELETE FROM Passwords WHERE PasswordID = $1";
+    
+    const deletePasword: QueryResult<passwordDetailType> = await pool.query<passwordDetailType>(sqlQuery, [id]);
+
+    res.status(204).send();
+  } catch (error) {
+    if(error instanceof Error){
+      console.error(error.message)
+    }
+    res.status(500).send("Internal Server Error");
+  };
 };
 
-export const editPassword = (req: Request, res: Response) => {
+export const editPassword = async (req: Request, res: Response) => {
   const {id} = req.params;
-  res.json({message: `Password with id: ${id} has been edited`});
+  const body = req.body;
+  const name: string = body?.name;
+  const password: string = body?.password;
+  if(!name?.trim() || !password?.trim()){
+    res.status(400).send("Password and Password name are required");
+    return;
+  }
+  try {
+    // check if the password exist
+    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
+
+    if(passwordDetail.length == 0){
+      res.status(404).send("Not Found");
+      return;
+    }
+
+    const sqlQuery: string = "UPDATE Passwords SET PasswordName = $1, Password = $2 WHERE PasswordID = $3 RETURNING * ;";
+    
+    const updatePassword: QueryResult<passwordDetailType> = await pool.query<passwordDetailType>(sqlQuery, [name, password, id]);
+
+    res.status(200).send(updatePassword.rows[0]);
+  } catch (error) {
+    if(error instanceof Error){
+      console.error(error.message)
+    }
+    res.status(500).send("Internal Server Error");
+  };
+};
+
+
+export const shufflePassword = async (req: Request, res: Response) => {
+  const {id} = req.params;
+  try {
+    // check if the password exist
+    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
+
+    if(passwordDetail.length == 0){
+      res.status(404).send("Not Found");
+      return;
+    }
+    const randomPassword = generatePassword();
+
+    const sqlQuery: string = "UPDATE Passwords SET Password = $1 WHERE PasswordID = $2 RETURNING * ;";
+    
+    const updatePassword: QueryResult<passwordDetailType> = await pool.query<passwordDetailType>(sqlQuery, [randomPassword, id]);
+
+    res.status(200).send(updatePassword.rows[0]);
+  } catch (error) {
+    if(error instanceof Error){
+      console.error(error.message)
+    }
+    res.status(500).send("Internal Server Error");
+  };
 };
 
