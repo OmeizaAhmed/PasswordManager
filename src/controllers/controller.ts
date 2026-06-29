@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type { QueryResult } from "pg";
 import { pool } from "../database/db.js";
 import sanitize from "sanitize-html";
-import { generatePassword } from "../utils/passwordGenerator.js";
+import { doesPasswordExist, generatePassword } from "../utils/utils.js";
 
 interface passwordType{
   PasswordID: number
@@ -22,6 +22,7 @@ export const getPasswords = async (req: Request, res: Response) => {
     const passwords: passwordType[] = (await pool.query<passwordType>(sqlQuery)).rows;
     if (passwords.length === 0){
       res.send({message: "You have no password"});
+      return;
     }
     res.send(passwords);
   } catch (error) {
@@ -91,10 +92,13 @@ export const addPassword = async (req: Request, res: Response) => {
 export const deletePassword = async (req: Request, res: Response) => {
   const {id} = req.params;
   try {
+    if(!id || typeof id !== "string"){
+      res.status(400).send("Bad Request");
+      return;
+    }
+    
     // check if the password exist
-    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
-
-    if(passwordDetail.length == 0){
+    if(!await doesPasswordExist(id)){
       res.status(404).send("Not Found");
       return;
     }
@@ -122,10 +126,13 @@ export const editPassword = async (req: Request, res: Response) => {
     return;
   }
   try {
+    if(!id || typeof id !== "string"){
+      res.status(400).send("Bad Request");
+      return;
+    }
+    
     // check if the password exist
-    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
-
-    if(passwordDetail.length == 0){
+    if(!await doesPasswordExist(id)){
       res.status(404).send("Not Found");
       return;
     }
@@ -147,10 +154,13 @@ export const editPassword = async (req: Request, res: Response) => {
 export const shufflePassword = async (req: Request, res: Response) => {
   const {id} = req.params;
   try {
+    if(!id || typeof id !== "string"){
+      res.status(400).send("Bad Request");
+      return;
+    }
+    
     // check if the password exist
-    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [id])).rows;
-
-    if(passwordDetail.length == 0){
+    if(!await doesPasswordExist(id)){
       res.status(404).send("Not Found");
       return;
     }

@@ -7,6 +7,6 @@ PasswordManagerRouter.get("/", getPasswords);
 PasswordManagerRouter.get("/:id", getPassword);
 PasswordManagerRouter.post("/", addPassword);
 PasswordManagerRouter.put("/:id", editPassword);
-PasswordManagerRouter.put("/shuffle/:id", shufflePassword);
+PasswordManagerRouter.put("/:id/shuffle", shufflePassword);
 PasswordManagerRouter.delete("/:id",deletePassword);
 
