@@ -2,29 +2,31 @@ import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
 import { PasswordRouter } from './routes/password.route.js';
 import { AuthRouter } from './routes/auth.route.js';
+import { authenticateJWT } from './middleware/auth.middleware.js';
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
 
-app.use((req: Request, res: Response, next: NextFunction) =>{
-  try {
-    next();
-  } catch (error) {
-    if(error instanceof Error){
-      console.error(error.message)
-    }
-    res.status(500).send("Internal Server Error");
-  }
-});
+
 
 app.use("/api/auth", AuthRouter);
-app.use("/api/password", PasswordRouter);
+app.use("/api/password", authenticateJWT, PasswordRouter);
 
 
 app.get('/', (req: Request, res: Response) => {
   res.send({ message: 'I am Root :)' });
+});
+
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  if (err instanceof Error) {
+    console.error(err.message);
+  } else {
+    console.error('An unknown error occurred:', err);
+  }
+  
+  res.status(500).send("Internal Server Error");
 });
 
 app.listen(PORT, () => {

@@ -21,8 +21,8 @@ export const generatePassword = (length: number = 12): string =>{
 }
 
 
-export const doesPasswordExist = async (passwordId: string): Promise<boolean> => {
-    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1;`, [passwordId])).rows;
+export const doesPasswordExist = async (passwordId: string, userId: string): Promise<boolean> => {
+    const passwordDetail: passwordDetailType[] = (await pool.query<passwordDetailType>(`SELECT * FROM Passwords WHERE PasswordID = $1 AND UserId = $2;`, [passwordId, userId])).rows;
     
     return passwordDetail.length === 0? false : true;
 };

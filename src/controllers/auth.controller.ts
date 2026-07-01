@@ -53,6 +53,8 @@ export const handleLogin = async (req: Request, res: Response) =>{
   } catch (error) {
     if(error instanceof Error){
       console.error(error.message)
+    } else {
+    console.error('An unknown error occurred:', error);
     }
     res.status(500).send("Internal Server Error")
   }
@@ -110,7 +112,9 @@ export const handleRegister= async (req: Request, res: Response) => {
   } catch (error) {
     if(error instanceof Error){
       console.error(error.message)
-    }
+    } else {
+    console.error('An unknown error occurred:', error);
+  }
     res.status(500).send("Internal Server Error")
   }  
 }
