@@ -1,6 +1,7 @@
 import express from 'express';
 import type { NextFunction, Request, Response } from 'express';
-import { PasswordManagerRouter } from './routes/route.js';
+import { PasswordRouter } from './routes/password.route.js';
+import { AuthRouter } from './routes/auth.route.js';
 
 const app = express();
 const PORT = 3000;
@@ -18,7 +19,9 @@ app.use((req: Request, res: Response, next: NextFunction) =>{
   }
 });
 
-app.use("/api/password", PasswordManagerRouter)
+app.use("/api/auth", AuthRouter);
+app.use("/api/password", PasswordRouter);
+
 
 app.get('/', (req: Request, res: Response) => {
   res.send({ message: 'I am Root :)' });
